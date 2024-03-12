@@ -15,7 +15,7 @@ def initialize_program() -> None:
 
         corner_points_number = int(input())
 
-    validateConvexPolygons(art_gallery_dict)
+    search_for_polygon_critical_point(art_gallery_dict)
 
 def populate_art_gallery(art_gallery_dict, arts_counter) -> None:
     art_gallery_dict_key = f'art_{arts_counter}'
@@ -32,69 +32,62 @@ def populate_art_gallery(art_gallery_dict, arts_counter) -> None:
         art_gallery_dict[art_gallery_dict_key].append([x_coordinate, y_coordinate])
         break
 
-def validateConvexPolygons(art_gallery_dict) -> None:
-    print('\n')
-    is_polygon_not_convex = ''
-
+def search_for_polygon_critical_point(art_gallery_dict) -> None:
     for _, art_gallery_dict_points_array in art_gallery_dict.items():
-       is_polygon_not_convex = execute_gift_wrapping_algorithm(art_gallery_dict_points_array)
-       print(is_polygon_not_convex)
+       print(execute_gift_wrapping_algorithm(art_gallery_dict_points_array))
 
 def execute_gift_wrapping_algorithm(art_gallery_dict_points_array) -> str:
-    print(art_gallery_dict_points_array)
-    leftmost_point_array = min(art_gallery_dict_points_array, key=lambda point: point[0])
-    print('leftmost: ', leftmost_point_array)
+    leftmost_point_array = min(art_gallery_dict_points_array, key=lambda point: point[1])
+    on_hull_point_array = leftmost_point_array
+    orientation = False
     hull_array = []
-    endpoint = []
-    loop_counter = 1
+    next_potential_point_array = []
 
-    p = leftmost_point_array
-    q = 0
+    while (True):
+        hull_array.append(on_hull_point_array)
+        next_potential_point_array = art_gallery_dict_points_array[0]
 
-    while (loop_counter > 0):
-        hull_array.append(p)
-        print('hull_array: ', hull_array)
-        print('len: ', len(art_gallery_dict_points_array))
+        for point_on_iteration_array in art_gallery_dict_points_array:
+            orientation = get_orientation(
+                on_hull_point_array,
+                next_potential_point_array,
+                point_on_iteration_array
+            )
 
-        endpoint = art_gallery_dict_points_array[0]
+            if (next_potential_point_array == on_hull_point_array or orientation == True):
+                next_potential_point_array = point_on_iteration_array
 
-        q = (p + 1) % len(art_gallery_dict_points_array)
+        on_hull_point_array = next_potential_point_array
 
-        for i in range(len(art_gallery_dict_points_array)):
-            if (endpoint == p or ):
-                q = i
-        
-        p = q
-
-        if (p == 1):
+        if (next_potential_point_array == hull_array[0]):
+            return 'No'
+        else:
             return 'Yes'
 
-    return 'No'
-
-def get_clockwise_orientation(
-        first_point_array,
-        second_point_array,
-        third_point_array
-) -> int:
+def get_orientation(
+        on_hull_point_array,
+        next_potential_point_array,
+        point_array
+) -> bool:
     vectorial_product = get_vectorial_product_calculated(
-        first_point_array,
-        second_point_array,
-        third_point_array
+        on_hull_point_array,
+        next_potential_point_array,
+        point_array
     )
-
-    if (vectorial_product == 0):
-        return 0
-    elif (vectorial_product > 0):
-        return 1
-    else:
-        return 2
+    return get_is_counter_clock_wise(vectorial_product)
 
 def get_vectorial_product_calculated(
-        first_point_array,
-        second_point_array,
-        third_point_array
-) -> float:    
-    return (second_point_array[1] - first_point_array[1]) * (third_point_array[0] - second_point_array[0]) - \
-        (second_point_array[0] - first_point_array[0]) * (third_point_array[1] - second_point_array[1])
+        on_hull_point_array,
+        next_potential_point_array,
+        point_on_iteration_array
+) -> float:
+    return (next_potential_point_array[0] - on_hull_point_array[0]) * (point_on_iteration_array[1] - on_hull_point_array[1]) - \
+        (next_potential_point_array[1] - on_hull_point_array[1]) * (point_on_iteration_array[0] - on_hull_point_array[0])
+
+def get_is_counter_clock_wise(vectorial_product) -> bool:
+    if (vectorial_product < 0.000001):
+        return True
+    elif (vectorial_product > 0.000001):
+        return False
 
 initialize_program()
