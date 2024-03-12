@@ -34,30 +34,67 @@ def populate_art_gallery(art_gallery_dict, arts_counter) -> None:
 
 def validateConvexPolygons(art_gallery_dict) -> None:
     print('\n')
-    vectorial_product = 0
+    is_polygon_not_convex = ''
 
     for _, art_gallery_dict_points_array in art_gallery_dict.items():
-        vectorial_product = get_vectorial_product_calculated(art_gallery_dict_points_array)
+       is_polygon_not_convex = execute_gift_wrapping_algorithm(art_gallery_dict_points_array)
+       print(is_polygon_not_convex)
 
-        if (vectorial_product > 0.000001):
-            print('No\n')
-        elif (vectorial_product < 0.000001):
-            print('Yes\n')
+def execute_gift_wrapping_algorithm(art_gallery_dict_points_array) -> str:
+    print(art_gallery_dict_points_array)
+    leftmost_point_array = min(art_gallery_dict_points_array, key=lambda point: point[0])
+    print('leftmost: ', leftmost_point_array)
+    hull_array = []
+    endpoint = []
+    loop_counter = 1
 
-def get_vectorial_product_calculated(art_gallery_dict_points_array) -> float:
-    vector_first_second_points = [
-        art_gallery_dict_points_array[1][0] - art_gallery_dict_points_array[0][0],
-        art_gallery_dict_points_array[1][1] - art_gallery_dict_points_array[0][1]
-    ]
+    p = leftmost_point_array
+    q = 0
 
-    vector_first_third_points = [
-        art_gallery_dict_points_array[2][0] - art_gallery_dict_points_array[0][0],
-        art_gallery_dict_points_array[2][1] - art_gallery_dict_points_array[0][1]
-    ]
+    while (loop_counter > 0):
+        hull_array.append(p)
+        print('hull_array: ', hull_array)
+        print('len: ', len(art_gallery_dict_points_array))
 
-    return abs(
-        vector_first_second_points[0] * vector_first_third_points[1] \
-            - vector_first_second_points[1] * vector_first_third_points[0]
+        endpoint = art_gallery_dict_points_array[0]
+
+        q = (p + 1) % len(art_gallery_dict_points_array)
+
+        for i in range(len(art_gallery_dict_points_array)):
+            if (endpoint == p or ):
+                q = i
+        
+        p = q
+
+        if (p == 1):
+            return 'Yes'
+
+    return 'No'
+
+def get_clockwise_orientation(
+        first_point_array,
+        second_point_array,
+        third_point_array
+) -> int:
+    vectorial_product = get_vectorial_product_calculated(
+        first_point_array,
+        second_point_array,
+        third_point_array
     )
+
+    if (vectorial_product == 0):
+        return 0
+    elif (vectorial_product > 0):
+        return 1
+    else:
+        return 2
+
+def get_vectorial_product_calculated(
+        first_point_array,
+        second_point_array,
+        third_point_array
+) -> float:    
+    return (second_point_array[1] - first_point_array[1]) * (third_point_array[0] - second_point_array[0]) - \
+        (second_point_array[0] - first_point_array[0]) * (third_point_array[1] - second_point_array[1])
 
 initialize_program()
