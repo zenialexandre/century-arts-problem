@@ -39,50 +39,58 @@ def search_for_polygon_critical_point(art_gallery_dict) -> None:
 def execute_gift_wrapping_algorithm(art_gallery_dict_points_array) -> str:
     leftmost_point_array = min(art_gallery_dict_points_array, key=lambda point: point[1])
     on_hull_point_array = leftmost_point_array
+    final_result_message = 'Yes'
     orientation = False
     hull_array = []
     next_potential_point_array = []
 
     while (True):
         hull_array.append(on_hull_point_array)
-        next_potential_point_array = art_gallery_dict_points_array[0]
+        next_potential_point_array = get_next_potential_point(art_gallery_dict_points_array, hull_array)
 
         for point_on_iteration_array in art_gallery_dict_points_array:
             orientation = get_orientation(
                 on_hull_point_array,
-                next_potential_point_array,
-                point_on_iteration_array
+                point_on_iteration_array,
+                next_potential_point_array
             )
 
-            if (next_potential_point_array == on_hull_point_array or orientation == True):
+            if (next_potential_point_array == on_hull_point_array or orientation):
                 next_potential_point_array = point_on_iteration_array
 
         on_hull_point_array = next_potential_point_array
 
-        if (next_potential_point_array == hull_array[0]):
-            return 'No'
-        else:
-            return 'Yes'
+        if (on_hull_point_array == leftmost_point_array):
+            final_result_message = 'No'
+            break
+
+    return final_result_message
+
+def get_next_potential_point(art_gallery_dict_points_array, hull_array):
+    for point_on_iteration_array in art_gallery_dict_points_array:
+        if (point_on_iteration_array not in hull_array):
+            return point_on_iteration_array
+    return []
 
 def get_orientation(
         on_hull_point_array,
-        next_potential_point_array,
-        point_array
+        point_on_iteration_array,
+        next_potential_point_array
 ) -> bool:
     vectorial_product = get_vectorial_product_calculated(
         on_hull_point_array,
-        next_potential_point_array,
-        point_array
+        point_on_iteration_array,
+        next_potential_point_array
     )
     return get_is_counter_clock_wise(vectorial_product)
 
 def get_vectorial_product_calculated(
         on_hull_point_array,
-        next_potential_point_array,
-        point_on_iteration_array
+        point_on_iteration_array,
+        next_potential_point_array
 ) -> float:
-    return (next_potential_point_array[0] - on_hull_point_array[0]) * (point_on_iteration_array[1] - on_hull_point_array[1]) - \
-        (next_potential_point_array[1] - on_hull_point_array[1]) * (point_on_iteration_array[0] - on_hull_point_array[0])
+    return (point_on_iteration_array[0] - on_hull_point_array[0]) * (next_potential_point_array[1] - on_hull_point_array[1]) - \
+        (point_on_iteration_array[1] - on_hull_point_array[1]) * (next_potential_point_array[0] - on_hull_point_array[0])
 
 def get_is_counter_clock_wise(vectorial_product) -> bool:
     if (vectorial_product < 0.000001):
