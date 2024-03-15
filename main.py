@@ -55,27 +55,32 @@ def execute_gift_wrapping_algorithm(art_gallery_dict_points_list: list[list[int]
     inverse_point_counter_clock_wise_list: list[int] = []
     on_convex_hull_list: list[int] = []
     next_potential_point_list: list[int] = []
-    is_points_on_right_side_still_exists: bool = False
+    points_on_right_side_list: list[list[int]] = []
     is_next_point_on_same_x_coordinate: bool = False
+    is_iteration_on_right_side: bool = True
 
     while (True):
         on_convex_hull_list.append(on_hull_point_list)
         angles_between_points_list.clear()
 
-        is_points_on_right_side_still_exists = get_is_points_on_right_side_still_exists(
+        populate_points_on_right_side(
             art_gallery_dict_points_list,
             on_convex_hull_list,
-            on_hull_point_list
+            on_hull_point_list,
+            points_on_right_side_list
         )
+
+        if (len(points_on_right_side_list) == 0):
+            is_iteration_on_right_side = False
 
         populate_angles_between_points_process(
             art_gallery_dict_points_list,
             on_convex_hull_list,
             on_hull_point_list,
             angles_between_points_list,
-            is_points_on_right_side_still_exists,
+            points_on_right_side_list,
             is_next_point_on_same_x_coordinate
-        )       
+        )
 
         if (on_hull_point_list == on_convex_hull_list[0]):
             inverse_point_counter_clock_wise_list = \
@@ -84,7 +89,11 @@ def execute_gift_wrapping_algorithm(art_gallery_dict_points_list: list[list[int]
         if (inverse_point_counter_clock_wise_list == on_hull_point_list):
             break
 
-        point_counter_clock_wise_list = get_counter_clock_wise_point(angles_between_points_list)
+        point_counter_clock_wise_list = get_counter_clock_wise_point(
+            angles_between_points_list,
+            is_iteration_on_right_side
+        )
+
         next_potential_point_list = point_counter_clock_wise_list
         on_hull_point_list = next_potential_point_list
 
@@ -98,7 +107,7 @@ def populate_angles_between_points_process(
     on_convex_hull_list: list[list[int]],
     on_hull_point_list: list[int],
     angles_between_points_list: list[tuple[list[int], int]],
-    is_points_on_right_side_still_exists: bool,
+    points_on_right_side_list: list[list[int]],
     is_next_point_on_same_x_coordinate: bool
 ) -> None:
     for point_on_iteration_list in art_gallery_dict_points_list:
@@ -109,17 +118,23 @@ def populate_angles_between_points_process(
             )
 
             if (
-                is_points_on_right_side_still_exists == True \
+                len(points_on_right_side_list) > 0 \
                 and point_on_iteration_list[0] > on_hull_point_list[0]
+                and len(on_convex_hull_list) > 1
             ):
                 populate_angles_between_points(
                     on_hull_point_list,
                     point_on_iteration_list,
                     angles_between_points_list
                 )
+                points_on_right_side_list.remove(point_on_iteration_list)
+
+                if (len(points_on_right_side_list) == 0):
+                    break
             elif (
-                is_points_on_right_side_still_exists == False \
+                len(points_on_right_side_list) == 0 \
                 and is_next_point_on_same_x_coordinate == True
+                and len(on_convex_hull_list) > 1
             ):
                 populate_angles_between_points(
                     on_hull_point_list,
@@ -134,18 +149,21 @@ def populate_angles_between_points_process(
                     angles_between_points_list
                 )
 
-def get_is_points_on_right_side_still_exists(
+                if (point_on_iteration_list in points_on_right_side_list):
+                    points_on_right_side_list.remove(point_on_iteration_list)
+
+def populate_points_on_right_side(
     art_gallery_dict_points_list: list[list[int]],
     on_convex_hull_list: list[list[int]],
-    on_hull_point_list: list[int]
-) -> bool:
+    on_hull_point_list: list[int],
+    points_on_right_side_list: list[list[int]]
+) -> None:
     for point_on_iteration_list in art_gallery_dict_points_list:
         if (
             point_on_iteration_list not in on_convex_hull_list \
             and point_on_iteration_list[0] > on_hull_point_list[0]
         ):
-            return True
-    return False
+            points_on_right_side_list.append(point_on_iteration_list)
 
 def get_is_next_point_on_same_x_coordinate(
     on_hull_point_list: list[int],
@@ -165,8 +183,13 @@ def populate_angles_between_points(
 
     angles_between_points_list.append((point_on_iteration_list, alpha_angle))
 
-def get_counter_clock_wise_point(angles_between_points_list: list[tuple[list[int], int]]) -> bool:
-    return min(angles_between_points_list, key=lambda my_tuple: my_tuple[1])[0]
+def get_counter_clock_wise_point(
+    angles_between_points_list: list[tuple[list[int], int]],
+    is_iteration_on_right_side: bool
+) -> bool:
+    if (is_iteration_on_right_side == True):
+        return min(angles_between_points_list, key=lambda my_tuple: my_tuple[1])[0]
+    return get_inverse_counter_clock_wise_point(angles_between_points_list)
 
 def get_inverse_counter_clock_wise_point(angles_between_points_list: list[tuple[list[int], int]]) -> bool:
     return max(angles_between_points_list, key=lambda my_tuple: my_tuple[1])[0]
