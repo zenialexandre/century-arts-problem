@@ -1,3 +1,5 @@
+# Alexandre Zeni
+
 from math import dist, degrees, asin
 
 def initialize_program() -> None:
